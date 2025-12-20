@@ -1,0 +1,32 @@
+﻿@page "/orders"
+
+<MudPopoverProvider />
+
+<PageTitle>Orders</PageTitle>
+
+<MudPaper Class="pa-16 ma-2" Elevation="3">
+    <MudGrid Spacing="3">
+        <MudItem xs="6">
+            <MudText Typo="Typo.h4">Заказы в период:</MudText>
+        </MudItem>
+        <MudItem xs="6">
+            <MudDateRangePicker 
+                Margin="Margin.Dense"
+                PickerVariant="@PickerVariant.Inline" 
+                @bind-DateRange="@_dateRange"/>
+        </MudItem>
+        <MudItem xs="12">
+            <Orders DateRange=@_dateRange/>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@code {
+    private DateRange _dateRange { get; set; }
+
+    override protected void OnInitialized()
+    {
+        var today = DateTime.Today;
+        _dateRange = new DateRange(today.AddMonths(-1), today);
+    }
+}

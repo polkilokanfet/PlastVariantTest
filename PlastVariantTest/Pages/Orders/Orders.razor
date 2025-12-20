@@ -1,0 +1,63 @@
+﻿@using PlastVariantTest.Data
+@using PlastVariantTest.Data.DB
+
+@if (orders == null)
+{
+    <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+}
+else
+{
+    <MudTable Items="orders"
+              Hover="true"
+              SortLabel="Sort By"
+              Elevation="3"
+              AllowUnsorted="false">
+        <HeaderContent>
+            <MudTh>
+                <MudTableSortLabel InitialDirection="SortDirection.Ascending"
+                                   SortBy="new Func<Order, object>(x => x.ShippingDate)">
+                    Реализован
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x => x.Number)">№</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x => x.Company.Name)">Покупатель</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x => x.Product.Name)">Продукт</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x => x.Amount)">Объём, кг</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Order, object>(x => x.Price)">руб./кг</MudTableSortLabel></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="ShippingDate">@context.ShippingDate</MudTd>
+            <MudTd DataLabel="Number">@context.Number</MudTd>
+            <MudTd DataLabel="Company">@context.Company.Name</MudTd>
+            <MudTd DataLabel="Product">@context.Product.Name</MudTd>
+            <MudTd DataLabel="Amount">@context.Amount</MudTd>
+            <MudTd DataLabel="Price">@context.Price</MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new int[] { 10, 50, 100 }" />
+        </PagerContent>
+    </MudTable>
+}
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public DateRange DateRange { get; set; }
+
+    private IEnumerable<Order>? orders;
+
+    [Inject]
+    private DataBase Db { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+    }
+
+    override protected async void OnParametersSet()
+    {
+        await Task.Delay(500);
+        orders = Db.Orders(DateOnly.FromDateTime(DateRange.Start.Value), DateOnly.FromDateTime(DateRange.End.Value));
+        StateHasChanged();
+    }
+}

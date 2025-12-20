@@ -1,0 +1,107 @@
+﻿@page "/"
+
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
+
+@using PlastVariantTest.Data
+@using PlastVariantTest.StateService.Orders
+
+@inject IState<OrdersReportState> State
+@inject IDispatcher Dispatcher
+
+<MudPopoverProvider />
+
+<PageTitle>SalesReport</PageTitle>
+
+<MudPaper Class="pa-5 ma-1" Elevation="3">
+    <MudGrid>
+        <MudItem xs="4">
+            <MudText Typo="Typo.h5">Продажи в период:</MudText>
+        </MudItem>
+        <MudItem xs="4">
+            <MudDateRangePicker Margin="Margin.Dense"
+                                PickerVariant="@PickerVariant.Inline"
+                                DateRangeChanged="OnDateRangeChanged"
+                                DateRange="@_dateRange" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@if (State.Value.IsLoading)
+{
+    <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+}
+else
+{
+    <MudPaper Class="pa-5 ma-1" Elevation="3">
+
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <MudText Typo="Typo.h5">Заказчики</MudText>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <CustomerPieTable />
+            </MudItem>
+            <MudItem xs="12" md="6"
+                     Class="d-flex align-center justify-center" Style="height: 400px">
+                <CustomerPie/>
+            </MudItem>
+        </MudGrid>
+
+    </MudPaper>
+
+    <MudPaper Class="pa-5 ma-1" Elevation="3">
+
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <MudText Typo="Typo.h5">Продукты</MudText>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <ProductsReportTable />
+            </MudItem>
+            <MudItem xs="12" md="6"
+                     Class="d-flex align-center justify-center" Style="height: 400px">
+                <ProductsReportPie />
+            </MudItem>
+        </MudGrid>
+
+    </MudPaper>
+
+}
+
+@code {
+    DateRange _dateRange;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (State.Value.IsLoaded)
+        {
+            _dateRange = new DateRange(
+                State.Value.Start.ToDateTime(TimeOnly.MinValue), 
+                State.Value.End.ToDateTime(TimeOnly.MaxValue));
+        }
+        else
+        {
+            var today = DateTime.Today;
+            this.OnDateRangeChanged(new DateRange(today.AddMonths(-1), today));
+        }
+    }
+
+    private void OnDateRangeChanged(DateRange newRange)
+    {
+        _dateRange = newRange;
+
+        var start = State.Value.Start;
+        var end = State.Value.End;
+
+        if (State.Value.IsLoaded &&
+            start == DateOnly.FromDateTime(this._dateRange.Start.Value) &&
+            end == DateOnly.FromDateTime(this._dateRange.End.Value))
+            return;
+
+        Dispatcher.Dispatch(new LoadOrdersReportAction(
+            DateOnly.FromDateTime(this._dateRange.Start.Value),
+            DateOnly.FromDateTime(this._dateRange.End.Value)));
+    }
+}

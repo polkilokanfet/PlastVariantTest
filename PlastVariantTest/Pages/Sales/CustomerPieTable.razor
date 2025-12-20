@@ -1,0 +1,38 @@
+﻿@inherits Fluxor.Blazor.Web.Components.FluxorComponent
+
+@using Fluxor
+@using PlastVariantTest.StateService.Customers
+@using PlastVariantTest.StateService.Orders
+
+@inject IState<OrdersReportState> State
+@inject IDispatcher Dispatcher
+
+<MudDataGrid 
+    T="CustomerReportItem" 
+    Hover="true"
+    Dense="true"
+    MultiSelection="true" 
+    Items="@State.Value.Orders.ToCustomerReportItems()"
+    SortMode="SortMode.Multiple" 
+    Filterable="true">
+    <Columns>
+@*             <HierarchyColumn T="CustomerReportItem"/> *@
+        <PropertyColumn Property="x => x.Customer.Name" Title="Покупатель" Sortable="true" Filterable="true" />
+        <PropertyColumn Property="x => x.Sum" Format="N2" Title="Сумма, руб." CellStyle="text-align: right;" />
+    </Columns>
+@*         <ChildRowContent>
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">@context.Item.Customer.City</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText>This element is number @context.Item.Customer.Name</MudText>
+            </MudCardContent>
+        </MudCard>
+    </ChildRowContent> *@
+    <PagerContent>
+        <MudDataGridPager T="CustomerReportItem" />
+    </PagerContent>
+</MudDataGrid>
