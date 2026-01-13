@@ -1,0 +1,15 @@
+﻿@page "/logout"
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using PlastVariantTest.Authentication
+
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await ((CustomAuthenticationStateProvider)AuthStateProvider).MarkUserAsLoggedOut();
+        Navigation.NavigateTo("/login");
+    }
+}

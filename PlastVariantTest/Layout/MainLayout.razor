@@ -1,5 +1,11 @@
 ﻿@inherits LayoutComponentBase
 
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+
 <MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode" />
 @* Required *@
 <MudThemeProvider />
@@ -11,6 +17,17 @@
 <MudLayout>
     <MudAppBar Elevation="1" Dense="true">
         <MudText Typo="Typo.h5" Class="ml-3">ПластВариант CRM</MudText>
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <MudText>Hello, @context.User.Identity?.Name</MudText>
+                <a href="/logout">LogOut</a>
+            </Authorized>
+            <NotAuthorized>
+                <MudText>You're not authorized. </MudText>
+                <a href="/login">Login</a>
+            </NotAuthorized>
+        </AuthorizeView>
+
     </MudAppBar>
     <MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
 @*         <MudDrawerHeader>

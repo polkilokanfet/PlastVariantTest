@@ -1,6 +1,7 @@
 ﻿using PlastVariantTest.Data;
 using PlastVariantTest.Data.DB;
 using Fluxor;
+using PlastVariantTest.Services.Api;
 
 namespace PlastVariantTest.StateService.Orders;
 
@@ -62,10 +63,12 @@ public static class OrdersReportReducers
 public class OrdersReportEffects
 {
     private readonly DataBase _db;
+    private readonly ILiraApi api;
 
-    public OrdersReportEffects(DataBase db)
+    public OrdersReportEffects(DataBase db, ILiraApi api)
     {
         _db = db;
+        this.api = api;
     }
 
     [EffectMethod]
@@ -73,7 +76,8 @@ public class OrdersReportEffects
     {
         try
         {
-            await Task.Delay(500);
+            //await Task.Delay(10000);
+            //var p = (await api.GetPersons());
             var result = _db.Orders(action.Start, action.End).ToList();
             dispatcher.Dispatch(new LoadOrdersReportSuccessAction(result));
         }

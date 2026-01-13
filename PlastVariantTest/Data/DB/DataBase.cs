@@ -29,6 +29,7 @@ public class DataBase
 
     public IEnumerable<Product> Products => _products;
     public IEnumerable<Company> Companies => _companies;
+    public IEnumerable<Company> GetCompanies(string partOfName) => _companies.Where(x => x.Name.Contains(partOfName));
     public IEnumerable<Order> Orders(DateOnly start, DateOnly end) => _orders.Where(x => x.ShippingDate >= start && x.ShippingDate <= end);
     public IEnumerable<PlanItem> PlanItems => _planItems;
 

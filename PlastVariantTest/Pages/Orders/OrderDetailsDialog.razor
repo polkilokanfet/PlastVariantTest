@@ -1,0 +1,25 @@
+﻿@using PlastVariantTest.Data
+
+<MudDialog>
+    <DialogContent>
+        <OrderDetailsComponent Model="@Order"/>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton OnClick="Submit" Color="Color.Primary">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public Order Order { get; set; }
+
+    private string _returnValue;
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(_returnValue));
+
+    private void Cancel() => MudDialog.Cancel();
+}

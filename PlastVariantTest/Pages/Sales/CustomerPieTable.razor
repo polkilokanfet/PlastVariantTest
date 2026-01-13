@@ -1,11 +1,15 @@
 ﻿@inherits Fluxor.Blazor.Web.Components.FluxorComponent
 
 @using Fluxor
+@using PlastVariantTest.Data
+@using PlastVariantTest.Pages.Orders
 @using PlastVariantTest.StateService.Customers
 @using PlastVariantTest.StateService.Orders
 
 @inject IState<OrdersReportState> State
 @inject IDispatcher Dispatcher
+
+@inject IDialogService DialogService
 
 <MudDataGrid 
     T="CustomerReportItem" 
@@ -16,23 +20,51 @@
     SortMode="SortMode.Multiple" 
     Filterable="true">
     <Columns>
-@*             <HierarchyColumn T="CustomerReportItem"/> *@
+            <HierarchyColumn T="CustomerReportItem"/>
         <PropertyColumn Property="x => x.Customer.Name" Title="Покупатель" Sortable="true" Filterable="true" />
         <PropertyColumn Property="x => x.Sum" Format="N2" Title="Сумма, руб." CellStyle="text-align: right;" />
     </Columns>
-@*         <ChildRowContent>
-        <MudCard>
-            <MudCardHeader>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6">@context.Item.Customer.City</MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudText>This element is number @context.Item.Customer.Name</MudText>
-            </MudCardContent>
-        </MudCard>
-    </ChildRowContent> *@
+        <ChildRowContent>
+        <MudDataGrid 
+            T="Order"
+            Items="@context.Item.Orders"
+            SelectedItemChanged=@OnSelectedOrderChanged
+            >
+            <Columns>
+                <PropertyColumn Property="x => x.Number" Title="Номер" Sortable="true" Filterable="true" />
+                <PropertyColumn Property="x => x.Product.Name" Title="Продукт" Sortable="true" Filterable="true" />
+                <PropertyColumn Property="x => x.ShippingDate" Title="Дата заказа" Sortable="true" Filterable="true" />
+                <PropertyColumn Property="x => x.Amount" Format="N2" Title="Количество" CellStyle="text-align: right;" />
+                <PropertyColumn Property="x => x.Price" Format="N2" Title="Цена, руб." CellStyle="text-align: right;" />
+            </Columns>
+        </MudDataGrid>
+    </ChildRowContent>
     <PagerContent>
         <MudDataGridPager T="CustomerReportItem" />
     </PagerContent>
 </MudDataGrid>
+
+@code 
+{
+    async Task OnSelectedOrderChanged(Order order)
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = false };
+        var parameters = new DialogParameters<OrderDetailsDialog>();
+        parameters.Add(x => x.Order, order);
+        var dialogReference = await DialogService.ShowAsync<OrderDetailsDialog>("Детали заказа", parameters, options);
+        var _returnValue = "Waiting for dialog to conclude ...";
+        StateHasChanged();
+        var dialogResult = await dialogReference.Result;
+        if (dialogResult.Canceled)
+        {
+            _returnValue = "Dialog was canceled";
+            StateHasChanged();
+        }
+        else
+        {
+            _returnValue = $"Dialog returned '{dialogResult.Data}'";
+            StateHasChanged();
+        }
+    }
+
+}

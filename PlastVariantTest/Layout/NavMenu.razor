@@ -1,4 +1,13 @@
-﻿<MudNavMenu>
+﻿@using Microsoft.AspNetCore.Components.Authorization
+
+<MudNavMenu>
     <MudNavLink Href="" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney">Продажи</MudNavLink>
     <MudNavLink Href="orders" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ListAlt">Заказы</MudNavLink>
+            
+    <AuthorizeView Roles="Admin">
+        <Authorized>
+            <MudNavLink Href="persons" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Girl">Персоны</MudNavLink>
+        </Authorized>
+    </AuthorizeView>
+
 </MudNavMenu>

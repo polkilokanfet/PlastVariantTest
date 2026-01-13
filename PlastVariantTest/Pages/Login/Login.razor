@@ -1,0 +1,135 @@
+﻿@page "/login"
+@layout EmptyLayout
+
+@using System.ComponentModel.DataAnnotations
+@using MudBlazor
+@using Lira.Shared.Requests
+@using Microsoft.AspNetCore.Components.Authorization
+@using PlastVariantTest.Authentication
+@using PlastVariantTest.Services.Api
+
+@inject ILiraApi ApiClient
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Вход в систему</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-12">
+    <MudCard Elevation="4" Class="pa-8 rounded-lg">
+        <MudCardHeader Class="pb-0">
+            <CardHeaderAvatar>
+                <MudAvatar Color="Color.Primary" Size="Size.Large">
+                    <MudIcon Icon="@Icons.Material.Filled.Lock" />
+                </MudAvatar>
+            </CardHeaderAvatar>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h5" Class="mb-n1">Добро пожаловать</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Войдите в свою учётную запись</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+
+        <MudCardContent>
+            <MudForm @ref="form" @bind-IsValid="@success" Validation="@(ValidationMessageLocalizer)">
+                <MudTextField T="string"
+                              @bind-Value="model.Email"
+                              Label="Email"
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Email"
+                              For="@(() => model.Email)"
+                              Immediate="true"
+                              Class="mt-6" />
+
+                <MudTextField T="string"
+                              @bind-Value="model.Password"
+                              Label="Пароль"
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Lock"
+                              AdornmentAriaLabel="Toggle Password Visibility"
+                              OnAdornmentClick="TogglePasswordVisibility"
+                              InputType="@(showPassword ? InputType.Text : InputType.Password)"
+                              For="@(() => model.Password)"
+                              Immediate="true"
+                              Class="mt-6" />
+
+                @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+                {
+                    <MudAlert Severity="Severity.Error" Class="mt-6" ShowCloseIcon="true" CloseIconClicked="() => ErrorMessage = null">
+                        @ErrorMessage
+                    </MudAlert>
+                }
+            </MudForm>
+        </MudCardContent>
+
+        <MudCardActions Class="pa-6 pt-2">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Size="Size.Large"
+                       FullWidth="true"
+                       Disabled="@(!success || isProcessing)"
+                       OnClick="HandleLogin">
+                @(isProcessing ? "Вход..." : "Войти")
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+
+</MudContainer>
+
+@code {
+    private MudForm form = null!;
+    private bool success;
+    private bool showPassword = false;
+    private bool isProcessing = false;
+    private string? ErrorMessage;
+
+    private LoginModel model = new();
+
+    private void TogglePasswordVisibility() => showPassword = !showPassword;
+
+    private async Task HandleLogin()
+    {
+        await form.Validate();
+
+        if (!success) return;
+
+        isProcessing = true;
+        ErrorMessage = null;
+
+        try
+        {
+            var res = await ApiClient.Login(new LoginRequest() { Email = model.Email, Password = model.Password } );
+            if (res != null && res.AccessToken != null)
+            {
+                await ((CustomAuthenticationStateProvider)AuthStateProvider).MarkUserAsAuthenticated(res);
+                // Успешный вход → перенаправление
+                Navigation.NavigateTo("/");
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message.Contains("401") 
+                ? "Неверный email или пароль"
+                : "Ошибка входа. Попробуйте позже.";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "Email обязателен")]
+        [EmailAddress(ErrorMessage = "Некорректный email")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "Пароль обязателен")]
+        [StringLength(100, MinimumLength = 4, ErrorMessage = "Пароль должен быть от 4 символов")]
+        public string Password { get; set; } = "";
+    }
+
+    // Красивая локализация ошибок на русском
+    private string? ValidationMessageLocalizer(string? fieldName, string? error) => error;
+}

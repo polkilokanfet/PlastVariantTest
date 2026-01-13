@@ -1,0 +1,42 @@
+﻿@page "/persons"
+
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
+
+@using Lira.Shared.Responses
+@using PlastVariantTest.StateService.Persons
+
+@inject IState<PersonsReportState> State
+@inject IDispatcher Dispatcher
+
+<MudPopoverProvider/>
+
+@if (State.Value.IsLoading)
+{
+    <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+}
+else
+{
+    <MudDataGrid T="PersonResponse"
+                 Hover="true"
+                 Dense="true"
+                 MultiSelection="true"
+                 Items="@State.Value.Persons"
+                 SortMode="SortMode.Multiple"
+                 Filterable="true">
+        <Columns>
+            <PropertyColumn Property="x => x.Name" Title="Имя" Sortable="true" Filterable="true" />
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="PersonResponse" />
+        </PagerContent>
+    </MudDataGrid>
+}
+
+@code
+{
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Dispatcher.Dispatch(new LoadPersonsReportAction());
+    }
+}

@@ -11,7 +11,7 @@
     ChartType="ChartType.Donut" 
     LegendPosition="Position.End"
     InputData="@State.Value.Orders.ToCustomerReportItems().Select(x => (double)(x.Sum)).ToArray()"
-          InputLabels="@State.Value.Orders.ToCustomerReportItems().Select(x => x.Customer.Name).ToArray()">
+    InputLabels="@State.Value.Orders.ToCustomerReportItems().Select(x => x.Customer.Name).ToArray()">
     <CustomGraphics>
         <text class="donut-inner-text" x="50%" y="35%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="20">Total</text>
         <text class="donut-inner-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="30">@State.Value.Orders.ToCustomerReportItems().Select(x => (double)(x.Sum)).ToArray()?.Sum().ToString("N2")</text>

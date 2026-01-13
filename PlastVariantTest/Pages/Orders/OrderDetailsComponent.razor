@@ -1,0 +1,135 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using PlastVariantTest.Data
+@using PlastVariantTest.Data.DB
+
+@inject DataBase Db
+
+<EditForm 
+    Model="@Model" 
+    OnValidSubmit="OnValidSubmit">
+@*     <DataAnnotationsValidator />
+ *@    <MudGrid>
+        <MudItem xs="12" sm="7">
+            <MudCard>
+                <MudCardContent>
+                    <MudTextField 
+                        Label="First name" 
+                        Required="true"
+                        ErrorText="Номер заказа обязателен"
+                        MaxLength="4"
+                        HelperText="Max. 4 characters"
+                        Value="@Model.Number"
+                        />
+                    <MudAutocomplete 
+                        T="Company" 
+                        Label="Компания" 
+                        SearchFunc="@SearchCompanies" 
+                        Placeholder="Введите название компании"
+                        ToStringFunc="@(c => c?.Name)" 
+                        Clearable="true" 
+                        DebounceInterval="300" 
+                        MinCharacters="2"
+                        Required="true"
+                        Value="@Model.Company"
+                        ValueChanged="@OnCompanySelected">
+                        <ItemTemplate Context="company">
+                            <MudText>@company.Name</MudText>
+                        </ItemTemplate>
+                    </MudAutocomplete>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton 
+                        ButtonType="ButtonType.Submit" 
+                        Variant="Variant.Filled" 
+                        Color="Color.Primary" 
+                        Class="ml-auto">Ok</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="5">
+            <MudPaper Class="pa-4 mud-height-full">
+                <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                @if (success)
+                {
+                    <MudText Color="Color.Success">Success</MudText>
+                }
+                else
+                {
+                    <MudText Color="@Color.Error">
+                        <ValidationSummary />
+                    </MudText>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public Order Model { get; set; } = new Order();
+
+    protected override void OnParametersSet()
+    {
+        Model ??= new Order(); // если родитель передал null — создаём новый
+    }
+
+    bool success;
+
+    private void OnValidSubmit(EditContext context)
+    {
+        success = true;
+        if (Model.Company == null)
+        {
+            success = false;
+        }
+        StateHasChanged();
+    }
+
+
+    Company SelectedCompany
+    {
+        get => Model.Company;
+        set => Model.Company = value;
+    }
+
+    private async Task<IEnumerable<Company>> SearchCompanies(string searchText, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(searchText))
+            return new List<Company>(); // Или топ-10 популярных
+
+        var results = Db.GetCompanies(searchText); // Серверный поиск
+
+        // if (results.Any() == false)
+        // {
+        //     // Добавляем опцию для создания новой
+        //     results = new List<Company> 
+        //     { 
+        //         new Company { Id = 0, Name = $"Добавить новую: \"{searchText}\"" } 
+        //     };
+        // }
+
+        return results;
+    }
+
+    private async Task OnCompanySelected(Company company)
+    {
+        // if (company?.Id == 0) // Это новая
+        // {
+        //     // Открываем диалог для создания
+        //     var parameters = new DialogParameters { ["InitialName"] = company.Name.Replace("Добавить новую: ", "").Trim('"') };
+        //     var dialog = DialogService.Show<CompanyCreateDialog>("Новая компания", parameters);
+        //     var result = await dialog.Result;
+
+        //     if (result.Canceled == false)
+        //     {
+        //         SelectedCompany = (Company)result.Data; // Новая компания из диалога
+        //     }
+        // }
+        // // Иначе - выбрана существующая
+
+        Model.Company = company;
+    }
+
+
+}

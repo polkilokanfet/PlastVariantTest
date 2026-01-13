@@ -18,7 +18,9 @@
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "https://localhost:7250;http://localhost:5124",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_Kestrel__Certificates__Default__Path": "%USERPROFILE%\\.aspnet\\https\\aspnetapp.pfx",
+        "ASPNETCORE_Kestrel__Certificates__Default__Password": "MyDevCertPass2026"
       }
     }
   }
